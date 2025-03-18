@@ -1,0 +1,1 @@
+# fugr-ru-test
