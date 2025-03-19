@@ -50,21 +50,20 @@ composer install
 
 ### Настройка базы данных
 
-1. Создайте базу данных (например, `tasks_db`) и пользователя с необходимыми правами.
-2. Отредактируйте файл `app/Config/database.php` и укажите актуальные данные для подключения к базе данных:
+1. Файлик `app/Config/database.php` редактируем и указываем актуальные данные для подключения к базе данных:
    ```php
    $host = 'localhost';
    $dbname = 'tasks_db';
    $username = 'db_user';
    $password = 'db_password';
    ```
-3. Создайте таблицу `tasks` согласно схеме, описанной в модели (или выполните SQL-скрипт для миграции).
+2. Создадим таблицу tasks или выполним миграцию
 
 ### Запуск в Docker
 
-Если вы предпочитаете использовать Docker, убедитесь, что Docker и Docker Compose установлены.
+Ну и для Docker у нас есть решение
 
-1. Проверьте содержимое `docker/Dockerfile` и `docker/docker-compose.yml`.
+1. Проверим содержимое `docker/Dockerfile` и `docker/docker-compose.yml`
 2. В корневой директории выполните:
    ```bash
    docker-compose up --build
