@@ -48,16 +48,25 @@ class TaskController
      */
     public function createTask(Request $request, Response $response): Response
     {
+        $contentType = $request->getHeaderLine('Content-Type');
+        if (stripos($contentType, 'application/json') === false) {
+            $error = ['error' => 'Content-Type должен быть application/json'];
+            $response->getBody()->write(json_encode($error));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(415);
+        }
+
         $data = (array)$request->getParsedBody();
 
-        // Валидация
-        if (empty($data['title']) || strlen($data['title']) > 255) {
-            $error = ['error' => 'Название задачи обязательно и должно быть до 255 символов.'];
+        $validationErrors = \App\Services\Validator::validateTaskData($data, false);
+        if (!empty($validationErrors)) {
+            $error = ['errors' => $validationErrors];
             $response->getBody()->write(json_encode($error));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
         }
 
-        $data['description'] = $data['description'] ?? '';
+        $data['title'] = htmlspecialchars($data['title'], ENT_QUOTES, 'UTF-8');
+        $data['description'] = isset($data['description']) ? htmlspecialchars($data['description'], ENT_QUOTES, 'UTF-8') : '';
+
         $data['status'] = $data['status'] ?? 'не выполнена';
 
         $taskId = $this->taskModel->create($data);
@@ -182,11 +191,31 @@ class TaskController
         $id = (int)$args['id'];
         $data = (array)$request->getParsedBody();
 
-        // Проверка на существование задачи
+        $contentType = $request->getHeaderLine('Content-Type');
+        if (stripos($contentType, 'application/json') === false) {
+            $error = ['error' => 'Content-Type должен быть application/json'];
+            $response->getBody()->write(json_encode($error));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(415);
+        }
+
+        $validationErrors = \App\Services\Validator::validateTaskData($data, true);
+        if (!empty($validationErrors)) {
+            $error = ['errors' => $validationErrors];
+            $response->getBody()->write(json_encode($error));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
+        }
+
         if (!$this->taskModel->getById($id)) {
             $error = ['error' => 'Задача не найдена'];
             $response->getBody()->write(json_encode($error));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(404);
+        }
+
+        if (isset($data['title'])) {
+            $data['title'] = htmlspecialchars($data['title'], ENT_QUOTES, 'UTF-8');
+        }
+        if (isset($data['description'])) {
+            $data['description'] = htmlspecialchars($data['description'], ENT_QUOTES, 'UTF-8');
         }
 
         $success = $this->taskModel->update($id, $data);
