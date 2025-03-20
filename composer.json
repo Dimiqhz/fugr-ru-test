@@ -1,12 +1,13 @@
 {
     "require": {
-      "php": "^8.2",
-      "ext-pdo": "*"
+        "php": "^8.2",
+        "ext-pdo": "*",
+        "slim/slim": "^4.0",
+        "slim/psr7": "^1.4"
     },
     "autoload": {
-      "psr-4": {
-        "App\\": "app/"
-      }
+        "psr-4": {
+            "App\\": "app/"
+        }
     }
-  }
-  
+}

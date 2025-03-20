@@ -21,22 +21,47 @@ class Task
      */
     public function create(array $data): ?int
     {
-        $sql = "INSERT INTO tasks (title, description, due_date, create_date, status, priority, category)
-                VALUES (:title, :description, :due_date, :create_date, :status, :priority, :category)";
+        if (isset($data['status'])) {
+            $data['status'] = trim($data['status']);
+            error_log("Статус (обычный): " . $data['status']);
+            error_log("Статус (hex): " . bin2hex($data['status']));
+        }
+        if (isset($data['priority'])) {
+            $data['priority'] = trim($data['priority']);
+        }
+
+        $allowedStatuses = ['выполнена', 'не выполнена'];
+        if (!in_array($data['status'], $allowedStatuses, true)) {
+            error_log("❌ Ошибка: Неверное значение 'status': " . $data['status']);
+            return null;
+        }
+
+        $sql = "INSERT INTO tasks (title, description, due_date, status, priority, category)
+                VALUES (:title, :description, :due_date, :status, :priority, :category)";
+
         try {
+            error_log("🟢 SQL на выполнение: " . json_encode($data, JSON_UNESCAPED_UNICODE));
+
             $stmt = $this->db->prepare($sql);
-            $stmt->execute([
-                ':title'       => $data['title'],
-                ':description' => $data['description'] ?? null,
-                ':due_date'    => $data['due_date'],
-                ':create_date' => $data['create_date'],
-                ':status'      => $data['status'],
-                ':priority'    => $data['priority'],
-                ':category'    => $data['category']
-            ]);
-            return (int)$this->db->lastInsertId();
+            $stmt->bindValue(':title', $data['title'], PDO::PARAM_STR);
+            $stmt->bindValue(':description', $data['description'] ?? null, PDO::PARAM_STR);
+            $stmt->bindValue(':due_date', $data['due_date'], PDO::PARAM_STR);
+            $stmt->bindValue(':status', $data['status'], PDO::PARAM_STR);
+            $stmt->bindValue(':priority', $data['priority'], PDO::PARAM_STR);
+            $stmt->bindValue(':category', $data['category'], PDO::PARAM_STR);
+            
+            $stmt->execute();
+
+            $lastId = $this->db->lastInsertId();
+            error_log("🟢 SQL выполнен, LAST_INSERT_ID: " . $lastId);
+
+            if (!$lastId) {
+                throw new \Exception("❌ Ошибка: lastInsertId вернул null.");
+            }
+
+            return (int)$lastId;
         } catch (PDOException $e) {
-            error_log('Ошибка создания задачи: ' . $e->getMessage());
+            error_log("❌ Ошибка SQL: " . $e->getMessage());
             return null;
         }
     }

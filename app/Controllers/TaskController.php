@@ -37,7 +37,6 @@ class TaskController
      *             @SWG\Property(property="title", type="string"),
      *             @SWG\Property(property="description", type="string"),
      *             @SWG\Property(property="due_date", type="string", format="date-time"),
-     *             @SWG\Property(property="create_date", type="string", format="date-time"),
      *             @SWG\Property(property="status", type="string"),
      *             @SWG\Property(property="priority", type="string"),
      *             @SWG\Property(property="category", type="string")
@@ -51,33 +50,51 @@ class TaskController
         $contentType = $request->getHeaderLine('Content-Type');
         if (stripos($contentType, 'application/json') === false) {
             $error = ['error' => 'Content-Type должен быть application/json'];
-            $response->getBody()->write(json_encode($error));
+            $response->getBody()->write(json_encode($error, JSON_UNESCAPED_UNICODE));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(415);
         }
 
-        $data = (array)$request->getParsedBody();
+        $data = json_decode($request->getBody()->getContents(), true);
+        
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            $error = ['error' => 'Неверный формат JSON'];
+            $response->getBody()->write(json_encode($error, JSON_UNESCAPED_UNICODE));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
+        }
 
-        $validationErrors = \App\Services\Validator::validateTaskData($data, false);
-        if (!empty($validationErrors)) {
-            $error = ['errors' => $validationErrors];
-            $response->getBody()->write(json_encode($error));
+        error_log("📌 Данные перед валидацией: " . json_encode($data, JSON_UNESCAPED_UNICODE));
+
+        $allowedStatus = ['выполнена', 'не выполнена'];
+        $allowedPriority = ['низкий', 'средний', 'высокий'];
+
+        if (!in_array($data['status'] ?? 'не выполнена', $allowedStatus, true)) {
+            $error = ['error' => 'Недопустимое значение status'];
+            $response->getBody()->write(json_encode($error, JSON_UNESCAPED_UNICODE));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
+        }
+
+        if (!in_array($data['priority'] ?? 'средний', $allowedPriority, true)) {
+            $error = ['error' => 'Недопустимое значение priority'];
+            $response->getBody()->write(json_encode($error, JSON_UNESCAPED_UNICODE));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
         }
 
         $data['title'] = htmlspecialchars($data['title'], ENT_QUOTES, 'UTF-8');
-        $data['description'] = isset($data['description']) ? htmlspecialchars($data['description'], ENT_QUOTES, 'UTF-8') : '';
+        $data['description'] = isset($data['description']) ? htmlspecialchars($data['description'], ENT_QUOTES, 'UTF-8') : null;
 
-        $data['status'] = $data['status'] ?? 'не выполнена';
+        error_log("🟢 SQL на выполнение: " . json_encode($data, JSON_UNESCAPED_UNICODE));
 
         $taskId = $this->taskModel->create($data);
+        
         if ($taskId === null) {
+            error_log("❌ Ошибка: lastInsertId вернул null");
             $error = ['error' => 'Не удалось создать задачу'];
-            $response->getBody()->write(json_encode($error));
+            $response->getBody()->write(json_encode($error, JSON_UNESCAPED_UNICODE));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
         }
 
         $result = ['id' => $taskId, 'message' => 'Task created successfully'];
-        $response->getBody()->write(json_encode($result));
+        $response->getBody()->write(json_encode($result, JSON_UNESCAPED_UNICODE));
         return $response->withHeader('Content-Type', 'application/json')->withStatus(201);
     }
 

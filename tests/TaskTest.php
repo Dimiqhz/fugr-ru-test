@@ -10,22 +10,20 @@ class TaskTest extends TestCase
     private Task $taskModel;
 
     /**
-     * Метод setUp выполняется перед каждым тестом
-     * Создаётся in-memory база данных SQLite и создаётся таблица tasks
+     * Метод setUp выполняется перед каждым тестом.
+     * Создаётся in-memory база данных SQLite и создаётся таблица tasks.
      */
     protected function setUp(): void
     {
         $this->pdo = new PDO('sqlite::memory:');
         $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-        // Создание схемы таблицы tasks
         $this->pdo->exec("
             CREATE TABLE tasks (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 title VARCHAR(255) NOT NULL,
                 description TEXT,
                 due_date DATETIME,
-                create_date DATETIME,
+                create_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 status VARCHAR(50),
                 priority VARCHAR(50),
                 category VARCHAR(100)
@@ -36,7 +34,7 @@ class TaskTest extends TestCase
     }
 
     /**
-     * Тест создания задачи.
+     * Тест создания задачи
      */
     public function testCreateTask(): void
     {
@@ -44,7 +42,6 @@ class TaskTest extends TestCase
             'title'       => 'Test Task',
             'description' => 'Test description',
             'due_date'    => '2025-01-20 15:00:00',
-            'create_date' => '2025-01-20 15:00:00',
             'status'      => 'не выполнена',
             'priority'    => 'высокий',
             'category'    => 'Работа'
@@ -59,7 +56,7 @@ class TaskTest extends TestCase
     }
 
     /**
-     * Тест получения списка задач с поиском и сортировкой.
+     * Тест получения списка задач с поиском и сортировкой
      */
     public function testGetAllTasks(): void
     {
@@ -67,7 +64,6 @@ class TaskTest extends TestCase
             'title'       => 'Task One',
             'description' => 'Desc One',
             'due_date'    => '2025-01-20 15:00:00',
-            'create_date' => '2025-01-20 15:00:00',
             'status'      => 'не выполнена',
             'priority'    => 'средний',
             'category'    => 'Работа'
@@ -76,7 +72,6 @@ class TaskTest extends TestCase
             'title'       => 'Task Two',
             'description' => 'Desc Two',
             'due_date'    => '2025-01-21 15:00:00',
-            'create_date' => '2025-01-21 15:00:00',
             'status'      => 'не выполнена',
             'priority'    => 'низкий',
             'category'    => 'Дом'
@@ -87,13 +82,12 @@ class TaskTest extends TestCase
         $tasks = $this->taskModel->getAll(null, 'due_date', 1, 10);
         $this->assertCount(2, $tasks, "Должно быть 2 задачи");
 
-        // Проверяем поиск по названию
         $tasksSearch = $this->taskModel->getAll('One', null, 1, 10);
         $this->assertCount(1, $tasksSearch, "Должна быть 1 задача с 'One' в названии");
     }
 
     /**
-     * Тест обновления задачи.
+     * Тест обновления задачи
      */
     public function testUpdateTask(): void
     {
@@ -101,7 +95,6 @@ class TaskTest extends TestCase
             'title'       => 'Original Task',
             'description' => 'Original description',
             'due_date'    => '2025-01-20 15:00:00',
-            'create_date' => '2025-01-20 15:00:00',
             'status'      => 'не выполнена',
             'priority'    => 'средний',
             'category'    => 'Личное'
@@ -133,7 +126,6 @@ class TaskTest extends TestCase
             'title'       => 'Task to Delete',
             'description' => 'Description',
             'due_date'    => '2025-01-20 15:00:00',
-            'create_date' => '2025-01-20 15:00:00',
             'status'      => 'не выполнена',
             'priority'    => 'низкий',
             'category'    => 'Дом'

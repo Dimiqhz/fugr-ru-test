@@ -82,7 +82,6 @@ curl -X POST http://localhost:8080/api/tasks \
            "title": "Пример задачи",
            "description": "Описание задачи",
            "due_date": "2025-01-20T15:00:00",
-           "create_date": "2025-01-20T15:00:00",
            "status": "не выполнена",
            "priority": "высокий",
            "category": "Работа"

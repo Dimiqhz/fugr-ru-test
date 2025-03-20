@@ -14,12 +14,12 @@ services:
       - "3306:3306"
     volumes:
       - db_data:/var/lib/mysql
-      - ./migrations/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./migrations/:/docker-entrypoint-initdb.d/
 
   app:
     build:
       context: .
-      dockerfile: docker/Dockerfile
+      dockerfile: Dockerfile
     container_name: php_tasks
     depends_on:
       - db

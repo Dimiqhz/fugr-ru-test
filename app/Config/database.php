@@ -11,16 +11,17 @@ class Database
      */
     public static function getConnection(): ?PDO
     {
-        $host = 'localhost';
+        $host = 'mysql_tasks';
         $dbname = 'tasks_db';
-        $username = 'db_user';
-        $password = 'db_password';
+        $username = 'user';
+        $password = 'password';
 
         $dsn = "mysql:host=$host;dbname=$dbname;charset=utf8mb4";
 
         try {
             $pdo = new PDO($dsn, $username, $password);
             $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            $pdo->exec("SET sql_mode=''");
             return $pdo;
         } catch (PDOException $e) {
             error_log('Database connection error: ' . $e->getMessage());
