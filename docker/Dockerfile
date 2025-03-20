@@ -21,5 +21,8 @@ RUN echo "\n# ==== Rewrite rules for API ====" >> /var/www/html/.htaccess \
  && echo "RewriteCond %{REQUEST_URI} ^/api" >> /var/www/html/.htaccess \
  && echo "RewriteRule ^api/(.*)$ index.php [QSA,L]" >> /var/www/html/.htaccess
 
+RUN composer require --dev zircote/swagger-php:^4.0 symfony/console doctrine/annotations
+RUN vendor/bin/openapi app --output swagger.json
+
 EXPOSE 80
 CMD ["apache2-foreground"]

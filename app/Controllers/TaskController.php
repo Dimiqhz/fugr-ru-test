@@ -25,24 +25,38 @@ class TaskController
     /**
      * Создает новую задачу
      *
-     * @SWG\Post(
+     * @OA\Post(
      *     path="/api/tasks",
      *     summary="Создание задачи",
-     *     @SWG\Parameter(
-     *         name="body",
-     *         in="body",
+     *     @OA\RequestBody(
      *         required=true,
-     *         @SWG\Schema(
+     *         @OA\JsonContent(
      *             type="object",
-     *             @SWG\Property(property="title", type="string"),
-     *             @SWG\Property(property="description", type="string"),
-     *             @SWG\Property(property="due_date", type="string", format="date-time"),
-     *             @SWG\Property(property="status", type="string"),
-     *             @SWG\Property(property="priority", type="string"),
-     *             @SWG\Property(property="category", type="string")
+     *             @OA\Property(property="title", type="string"),
+     *             @OA\Property(property="description", type="string"),
+     *             @OA\Property(property="due_date", type="string", format="date-time"),
+     *             @OA\Property(property="status", type="string"),
+     *             @OA\Property(property="priority", type="string"),
+     *             @OA\Property(property="category", type="string")
      *         )
      *     ),
-     *     @SWG\Response(response=201, description="Task created successfully")
+     *     @OA\Response(
+     *         response=201,
+     *         description="Task created successfully",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="id", type="integer"),
+     *             @OA\Property(property="message", type="string")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Некорректный запрос"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Ошибка создания задачи"
+     *     )
      * )
      */
     public function createTask(Request $request, Response $response): Response
@@ -101,34 +115,45 @@ class TaskController
     /**
      * Получает список задач с возможностью поиска и сортировки (постраничный вывод присутствует)
      *
-     * @SWG\Get(
+     * @OA\Get(
      *     path="/api/tasks",
      *     summary="Получение списка задач",
-     *     @SWG\Parameter(
+     *     @OA\Parameter(
      *         name="search",
      *         in="query",
-     *         type="string",
-     *         description="Поиск по названию задачи"
+     *         description="Поиск по названию задачи",
+     *         required=false,
+     *         @OA\Schema(type="string")
      *     ),
-     *     @SWG\Parameter(
+     *     @OA\Parameter(
      *         name="sort",
      *         in="query",
-     *         type="string",
-     *         description="Сортировка по due_date или create_date"
+     *         description="Сортировка по due_date или create_date",
+     *         required=false,
+     *         @OA\Schema(type="string")
      *     ),
-     *     @SWG\Parameter(
+     *     @OA\Parameter(
      *         name="page",
      *         in="query",
-     *         type="integer",
-     *         description="Номер страницы для пагинации"
+     *         description="Номер страницы для пагинации",
+     *         required=false,
+     *         @OA\Schema(type="integer")
      *     ),
-     *     @SWG\Parameter(
+     *     @OA\Parameter(
      *         name="limit",
      *         in="query",
-     *         type="integer",
-     *         description="Количество задач на странице"
+     *         description="Количество задач на странице",
+     *         required=false,
+     *         @OA\Schema(type="integer")
      *     ),
-     *     @SWG\Response(response=200, description="Список задач")
+     *     @OA\Response(
+     *         response=200,
+     *         description="Список задач",
+     *         @OA\JsonContent(
+     *             type="array",
+     *             @OA\Items(type="object")
+     *         )
+     *     )
      * )
      */
     public function getTasks(Request $request, Response $response): Response
@@ -147,17 +172,26 @@ class TaskController
     /**
      * Получает конкретную задачу по ID
      *
-     * @SWG\Get(
+     * @OA\Get(
      *     path="/api/tasks/{id}",
      *     summary="Получение задачи по ID",
-     *     @SWG\Parameter(
+     *     @OA\Parameter(
      *         name="id",
      *         in="path",
-     *         type="integer",
+     *         description="ID задачи",
      *         required=true,
-     *         description="ID задачи"
+     *         @OA\Schema(type="integer")
      *     ),
-     *     @SWG\Response(response=200, description="Данные задачи")
+     *     @OA\Response(
+     *         response=200,
+     *         description="Данные задачи",
+     *         @OA\JsonContent(type="object")
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Задача не найдена",
+     *         @OA\JsonContent(type="object")
+     *     )
      * )
      */
     public function getTask(Request $request, Response $response, array $args): Response
@@ -176,31 +210,36 @@ class TaskController
     /**
      * Обновляет задачу по ID
      *
-     * @SWG\Put(
+     * @OA\Put(
      *     path="/api/tasks/{id}",
      *     summary="Обновление задачи",
-     *     @SWG\Parameter(
+     *     @OA\Parameter(
      *         name="id",
      *         in="path",
-     *         type="integer",
+     *         description="ID задачи",
      *         required=true,
-     *         description="ID задачи"
+     *         @OA\Schema(type="integer")
      *     ),
-     *     @SWG\Parameter(
-     *         name="body",
-     *         in="body",
+     *     @OA\RequestBody(
      *         required=true,
-     *         @SWG\Schema(
+     *         @OA\JsonContent(
      *             type="object",
-     *             @SWG\Property(property="title", type="string"),
-     *             @SWG\Property(property="description", type="string"),
-     *             @SWG\Property(property="due_date", type="string", format="date-time"),
-     *             @SWG\Property(property="status", type="string"),
-     *             @SWG\Property(property="priority", type="string"),
-     *             @SWG\Property(property="category", type="string")
+     *             @OA\Property(property="title", type="string"),
+     *             @OA\Property(property="description", type="string"),
+     *             @OA\Property(property="due_date", type="string", format="date-time"),
+     *             @OA\Property(property="status", type="string"),
+     *             @OA\Property(property="priority", type="string"),
+     *             @OA\Property(property="category", type="string")
      *         )
      *     ),
-     *     @SWG\Response(response=200, description="Task updated successfully")
+     *     @OA\Response(
+     *         response=200,
+     *         description="Task updated successfully",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string")
+     *         )
+     *     )
      * )
      */
     public function updateTask(Request $request, Response $response, array $args): Response
@@ -249,17 +288,24 @@ class TaskController
     /**
      * Удаляет задачу по ID
      *
-     * @SWG\Delete(
+     * @OA\Delete(
      *     path="/api/tasks/{id}",
      *     summary="Удаление задачи",
-     *     @SWG\Parameter(
+     *     @OA\Parameter(
      *         name="id",
      *         in="path",
-     *         type="integer",
+     *         description="ID задачи",
      *         required=true,
-     *         description="ID задачи"
+     *         @OA\Schema(type="integer")
      *     ),
-     *     @SWG\Response(response=200, description="Task deleted successfully")
+     *     @OA\Response(
+     *         response=200,
+     *         description="Task deleted successfully",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string")
+     *         )
+     *     )
      * )
      */
     public function deleteTask(Request $request, Response $response, array $args): Response

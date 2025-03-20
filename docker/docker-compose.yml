@@ -33,6 +33,13 @@ services:
     volumes:
       - .:/var/www/html
     working_dir: /var/www/html
+    command: >
+      sh -c "
+        composer install &&
+        composer require --dev zircote/swagger-php:^4.0 symfony/console doctrine/annotations &&
+        vendor/bin/openapi app --output swagger.json &&
+        apache2-foreground
+      "
 
 volumes:
   db_data:
