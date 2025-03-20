@@ -11,9 +11,15 @@ RUN sed -ri -e 's!/var/www/html!<Directory /var/www/html>\n\tAllowOverride All\n
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 WORKDIR /var/www/html
+
 COPY . /var/www/html
 
 RUN composer install --no-dev --optimize-autoloader || composer update
+
+RUN echo "\n# ==== Rewrite rules for API ====" >> /var/www/html/.htaccess \
+ && echo "RewriteEngine On" >> /var/www/html/.htaccess \
+ && echo "RewriteCond %{REQUEST_URI} ^/api" >> /var/www/html/.htaccess \
+ && echo "RewriteRule ^api/(.*)$ index.php [QSA,L]" >> /var/www/html/.htaccess
 
 EXPOSE 80
 CMD ["apache2-foreground"]
