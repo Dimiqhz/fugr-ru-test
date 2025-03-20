@@ -64,7 +64,7 @@ composer install
 Ну и для Docker у нас есть решение
 
 1. Проверим содержимое `docker/Dockerfile` и `docker/docker-compose.yml`
-2. В корневой директории выполните:
+2. В корневой директории выполните (не забудьте копировать файлы проекта в папку с docker файлами):
    ```bash
    docker-compose up --build
    ```
